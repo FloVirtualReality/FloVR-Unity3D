@@ -14,11 +14,13 @@ Integration:
 
 3.	Step: Show the ads like on the following example
 
-```public void ShowAd()
+```
+public void ShowAd()
 {
 	Ad newAd = new Ad(AdType.Video360, false, (AdState adState, Ad adObject) => {
 		if (adState == AdState.Ready) {
 			adObject.Show();
  		}
  	});
-}```
+}
+```
