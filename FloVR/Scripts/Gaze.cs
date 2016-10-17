@@ -16,7 +16,12 @@ namespace FloVR {
 		private float _startTime;
 		private bool _going;
 
-		public void Update()
+		private void Awake()
+		{
+			_fetchedAd = new Ad(type, IsRewarded);
+		}
+
+		private void Update()
 		{
 			RaycastHit seen;
 			Ray raydirection = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
