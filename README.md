@@ -11,8 +11,9 @@ Step 2:
 	  b. Add to the to the top of the script 
 	  ```
 	  “using FloVR”;
-         ```
-	  c. Call 
+          ```
+	 
+	 c. Call 
 	  ```
 	  FloVRManager.Initialize("YourAppId", "YourAppSecret");
 	  ```
