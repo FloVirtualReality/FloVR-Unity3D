@@ -1,26 +1,36 @@
 # FloVR-Unity3D
+
+##Overview
 Unity SDK for advertising in VR unity games
 
-Integration:
+##Integration
 
-Step 1:
-           a: Import flovr-X.X.X.unitypackage to the project.
-	   b: Clone or download the repo and copy to the Assets folder.
-Step 2:
-          a. Drag the Assets/FloVR/Prefabs/FloVRManager prefab to the first scene in your game. Fill out the AppId and AppSecret.
-	  b. Add to the to the top of the script 
-	 
-	  ```
-	  using FloVR;
-	  ```
-	 
-	c. Call 
-	 
-	  ```FloVRManager.Initialize("YourAppId", "YourAppSecret")```
+###I. Import
 
-Step 3: Show the ad
+	* Import flovr-X.X.X.unitypackage to the project.
+	
+	OR
+	
+	* Clone or download the repo and copy to the Assets folder.
+###II. Initialize
 
-```
+	* Drag the Assets/FloVR/Prefabs/FloVRManager prefab to the first scene in your game. Fill out the AppId and AppSecret.
+		
+	OR
+	
+	* Add to the following code to your game:
+	 
+	```C#
+	using FloVR;
+
+	public void Awake() 
+	{
+		FloVRManager.Initialize("YourAppId", "YourAppSecret");
+		// Other stuff you want to do
+	}
+	```
+###III. Show
+```C#
 public void ShowAd()
 {
 	Ad newAd = new Ad(AdType.Video360, false, (AdState adState, Ad adObject) => {
