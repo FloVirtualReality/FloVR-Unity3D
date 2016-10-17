@@ -10,14 +10,12 @@ Step 2:
           a. Drag the Assets/FloVR/Prefabs/FloVRManager prefab to the first scene in your game. Fill out the AppId and AppSecret.
 	  b. Add to the to the top of the script 
 	 
-	 ```
-	  “using FloVR”;
-          ```
+	  ```using FloVR;```
 	 
-	 c. Call 
-	  ```
-	  FloVRManager.Initialize("YourAppId", "YourAppSecret");
-	  ```
+	c. Call 
+	 
+	  ```FloVRManager.Initialize("YourAppId", "YourAppSecret")```
+
 Step 3: Show the ad
 
 ```
