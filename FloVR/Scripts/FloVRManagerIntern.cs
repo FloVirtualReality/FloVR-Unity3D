@@ -1,14 +1,18 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
-using System.Net;
+using System.Runtime.InteropServices;
+
 
 namespace FloVR {
 	
 	internal class FloVRManagerIntern : AndroidJavaProxy
 	{
+#if UNITY_ANDROID
 		private AndroidJavaObject _nativeObject;
 		private AndroidJavaObject _unityPlayer;
+#elif UNITY_IOS
+		private IntPtr _nativeObject;
+#endif
 
 		private SystemState _state;
 		internal SystemState State {
@@ -35,6 +39,7 @@ namespace FloVR {
 		{
 			_initCallback = initCallback;
 			State = SystemState.Initializing;
+#if UNITY_ANDROID
 			try
 			{
 				_unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
@@ -45,6 +50,9 @@ namespace FloVR {
 			}
 			catch { 
 			}
+#elif UNITY_IOS
+			_nativeObject = FloVRManagerCtrIntern(ToIntPtr(this), appId, appSecret);
+			#endif
 		}
 
 		internal void OnInitCompleted()
@@ -54,12 +62,16 @@ namespace FloVR {
 
 		internal void PauseUnityPlayer()
 		{
+			#if UNITY_ANDROID
 			_unityPlayer.Call ("pause");
+			#endif
 		}
 
 		internal void ResumeUnityPlayer()
 		{
+			#if UNITY_ANDROID
 			_unityPlayer.Call ("resume");
+			#endif
 		}
 
 		internal static void Initialize(string appId, string appSecret, Action<SystemState> initCallback)
@@ -70,6 +82,27 @@ namespace FloVR {
 				Debug.LogWarning ("FloVR: SDK is already initialized.");
 				return;
 			}
+		}
+
+		#if UNITY_IOS
+		#region Native calls
+
+		[DllImport("__Internal")]
+		private static extern IntPtr FloVRManagerCtrIntern(IntPtr csharpAd, string appId, string appSecret);
+
+		#endregion
+		#endif
+
+
+		private static IntPtr ToIntPtr(object obj)
+		{
+			GCHandle handle1 = GCHandle.Alloc(obj);
+			return (IntPtr)handle1;
+		}
+
+		private static T FromIntPtr<T>(IntPtr pointer)
+		{
+			return (T)((GCHandle)pointer).Target;
 		}
 	}
 

@@ -4,7 +4,11 @@ using UnityEngine;
 
 namespace FloVR
 {
+	#if UNITY_ANDROID
 	public class Ad : GearVRAd
+	#elif UNITY_IOS
+	public class Ad : iOSCardboardAd
+	#endif
 	{
 		private Action<AdState, Ad> _callback;
 
