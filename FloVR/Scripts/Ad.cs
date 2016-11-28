@@ -15,6 +15,7 @@ namespace FloVR
 		public Ad(AdType type, bool isRewarded = false, Action<AdState, Ad> callback = null) : base( type, isRewarded)
 		{
 			_callback = callback;
+			State = State;
 		}
 
 		public override AdState State

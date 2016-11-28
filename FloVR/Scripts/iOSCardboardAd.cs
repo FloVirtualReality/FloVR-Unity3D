@@ -1,6 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using System.Runtime.InteropServices;
+using AOT;
+using System.Collections.Generic;
 
 namespace FloVR.AdTypes
 {
@@ -29,7 +31,7 @@ namespace FloVR.AdTypes
 		{
 			get
 			{
-				return IsShownIntern(_nativeObject);
+				return _IsShownIntern(_nativeObject);
 			}
 		}
 
@@ -51,7 +53,12 @@ namespace FloVR.AdTypes
 		public iOSCardboardAd(AdType type, bool isRewarded = false)
 		{
 			State = AdState.Initializing;
-			_nativeObject = iOSCardboardAdCtrIntern(ToIntPtr(this), (int)type, isRewarded);
+			_adLookup.Add(_counter, this);
+			_onAdFinished = new SignalCallback(OnAdFinished);
+			_onError = new SignalCallback(OnError);
+			_onLoadFinished = new SignalCallback(OnLoadFinished);
+			_nativeObject = _iOSCardboardAdCtrIntern(_counter, _onAdFinished, _onError, _onLoadFinished, (int)type, isRewarded); //_iOSCardboardAdCtrIntern(ToIntPtr(this), (int)type, isRewarded);
+			_counter++;
 		}
 
 		/// <summary>
@@ -60,43 +67,51 @@ namespace FloVR.AdTypes
 		public void Show()
 		{
 			State = AdState.Running;
-			ShowIntern(_nativeObject);
+			_ShowIntern(_nativeObject);
 			FloVRManagerIntern.Instance.PauseUnityPlayer();
 		}
 
 		/// <summary>
 		/// Called from native code. Please don't call this function.
 		/// </summary>
-		public static void OnAdFinished(IntPtr obj,string result)
+		[MonoPInvokeCallback(typeof(SignalCallback))]
+		public static void OnAdFinished(int adId)
 		{
-			iOSCardboardAd current = FromIntPtr<iOSCardboardAd>(obj);
-			current.State = AdState.Shown;
+			iOSCardboardAd currentAd = _adLookup[adId];
+			currentAd.State = AdState.Shown;
 			FloVRManagerIntern.Instance.ResumeUnityPlayer();
 		}
 
 		/// <summary>
 		/// Called from native code. Please don't call this function.
 		/// </summary>
-		public static void OnError(string error)
+		[MonoPInvokeCallback(typeof(SignalCallback))]
+		public static void OnError(int adId)
 		{
 #if DEBUG
-			Debug.LogError(error);
+			Debug.LogError("Error occured");
 #endif
 		}
 
 		/// <summary>
 		/// Called from JNI. Please don't call this function.
 		/// </summary>
-		public void OnLoadFinished()
+		[MonoPInvokeCallback(typeof(SignalCallback))]
+		public static void OnLoadFinished(int adId)
 		{
-			IsLoaded = true;
-			State = AdState.Ready;
+			Debug.Log("callback");
+			iOSCardboardAd currentAd = _adLookup[adId];
+			currentAd.IsLoaded = true;
+			currentAd.State = AdState.Ready;
 		}
+
+		private static int _counter = 0;
+		private static Dictionary<int, iOSCardboardAd> _adLookup = new Dictionary<int, iOSCardboardAd>();
 
 		private static IntPtr ToIntPtr(object obj)
 		{
-			GCHandle handle1 = GCHandle.Alloc(obj);
-			return (IntPtr)handle1;
+			var data = GCHandle.ToIntPtr(GCHandle.Alloc(obj));
+			return data;
 		}
 
 		private static T FromIntPtr<T>(IntPtr pointer)
@@ -107,13 +122,20 @@ namespace FloVR.AdTypes
 		#region Native calls
 
 		[DllImport("__Internal")]
-		private static extern bool IsShownIntern(IntPtr _nativeObject);
+		private static extern bool _IsShownIntern(IntPtr _nativeObject);
 
 		[DllImport("__Internal")]
-		private static extern IntPtr iOSCardboardAdCtrIntern(IntPtr csharpAd, int type, bool isRewarded);
+		private static extern IntPtr _iOSCardboardAdCtrIntern(int adId, SignalCallback onAdFinished, SignalCallback onError, SignalCallback onLoadFinished, int type, bool isRewarded);
 
 		[DllImport("__Internal")]
-		private static extern void ShowIntern(IntPtr _nativeObject);
+		private static extern void _ShowIntern(IntPtr _nativeObject);
+
+		internal delegate void SignalCallback(int adId);
+
+		private SignalCallback _onAdFinished;
+		private SignalCallback _onError;
+		private SignalCallback _onLoadFinished;
+
 
 		#endregion
 	}
